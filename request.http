@@ -1,0 +1,33 @@
+POST http://localhost:5000/api/students
+content-type: application/json
+
+{
+    "fullname": "Le Viet Cuong1",
+    "email": "cuongle.devplus",
+    "mobile": "01122334455",
+    "address": "Da Nang",
+    "hobby": "English"
+}
+
+###
+
+GET http://localhost:5000/api/students
+Content-Type: application/json
+
+
+###
+
+PATCH http://localhost:5000/api/student/6226df648eee41df926f5e57
+Content-Type: application/json
+
+{
+    "fullname": "Nguyen Van B",
+    "email": "anguyen.devplus@gmail.com",
+    "mobile": "0412346578",
+    "address": "Da Nang",
+    "hobby": "game"
+}
+
+###
+DELETE  http://localhost:5000/api/student/6226fdd636dbed7d9dcd3157
+Content-Type: application/json
