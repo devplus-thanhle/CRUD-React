@@ -31,3 +31,12 @@ Content-Type: application/json
 ###
 DELETE  http://localhost:5000/api/student/6226fdd636dbed7d9dcd3157
 Content-Type: application/json
+
+
+### 
+GET http://localhost:5000/api/student/6226ddf83cf71a02a07ec7e0
+Content-Type: application/json
+
+###
+GET http://localhost:5000/api/search?fullname=thanh
+Content-Type: application/json

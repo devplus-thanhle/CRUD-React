@@ -1,0 +1,17 @@
+[
+  {
+    "display_name": "Home",
+    "route": "/",
+    "icon": "bx bx-user-pin"
+  },
+  {
+    "display_name": "List Student",
+    "route": "/list",
+    "icon": "bx bx-user-pin"
+  },
+  {
+    "display_name": "Add Student",
+    "route": "/create",
+    "icon": "bx bx-list-ol"
+  }
+]

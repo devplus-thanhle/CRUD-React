@@ -8,7 +8,10 @@ router
 
 router
   .route("/student/:id")
+  .get(studentCtrl.getStudentById)
   .patch(studentCtrl.updateStudent)
   .delete(studentCtrl.deleteStudent);
+
+router.get("/search", studentCtrl.searchStudent);
 
 module.exports = router;

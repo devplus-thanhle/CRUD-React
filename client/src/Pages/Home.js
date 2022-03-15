@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteStudent, getNotes } from "../redux/Action/studentAction";
 import { makeStyles } from "@material-ui/core/styles";
@@ -10,9 +10,13 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
-import { Button, Typography } from "@material-ui/core";
+import { Box, Button, Typography } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
+import { getDataAPI } from "../api/fetchData";
+import { GLOBALTYPES } from "../redux/Action/globalTypes";
+import HighlightOffOutlinedIcon from "@material-ui/icons/HighlightOffOutlined";
 
 const columns = [
   { id: "stt", label: "STT", minWidth: 100 },
@@ -64,7 +68,7 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     top: "50%",
     left: "50%",
-    transform: "translate(-50%, -50%)",
+    transform: "translate(-25%, -50%)",
   },
 }));
 
@@ -73,6 +77,11 @@ function Home(props) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [data, setData] = useState([]);
+  const [value, setValue] = useState(null);
+  // const [newValue, setNewValue] = useState(null);
+  const [newData, setNewData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  // const typingTimeoutRef = useRef(null);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getNotes());
@@ -86,36 +95,92 @@ function Home(props) {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+  // const handleSearchTermChange = (e) => {
+  //   const value = e.target.value;
+  //   setValue(value);
+  //   if (typingTimeoutRef.current) {
+  //     clearTimeout(typingTimeoutRef.current);
+  //   }
+
+  //   typingTimeoutRef.current = setTimeout(() => {
+  //     const formValues = {
+  //       value: value,
+  //     };
+  //     setNewValue(formValues);
+  //   }, 400);
+  // };
+
   useEffect(() => {
     if (student.students) {
       setData(student.students);
     }
   }, [student]);
 
+  useEffect(() => {
+    async function Search() {
+      if (value) {
+        setLoading(true);
+        await getDataAPI(`search?fullname=${value}`)
+          .then((res) => setNewData(res.data.students))
+          .catch((err) => {
+            dispatch({
+              type: GLOBALTYPES.ALERT,
+              payload: {
+                err: err.response.data.msg,
+              },
+            });
+          });
+        setLoading(false);
+      } else {
+        setNewData(data);
+      }
+      // if (!value) {
+      //   setNewData(data);
+      // }
+    }
+    Search();
+  }, [value, dispatch, data]);
+
   const handleRemove = (id) => {
     if (window.confirm("Are you sure to delete this student?")) {
       dispatch(deleteStudent(id));
     }
   };
+  const handleClose = () => {
+    setValue("");
+  };
 
   return (
     <>
+      <div className="topnav__search">
+        <input
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
+          type="text"
+          placeholder="Search here..."
+        />
+        {value ? (
+          <HighlightOffOutlinedIcon
+            onClick={handleClose}
+            className="topnav__search-icon close"
+          />
+        ) : (
+          <SearchOutlinedIcon className="topnav__search-icon" />
+        )}
+      </div>
       {student.loading ? (
         <div className={classes.loading}>
           <CircularProgress size={70} />
         </div>
       ) : (
         <>
-          <Typography variant="h4">List Students</Typography>
-          <Link className={classes.link} to="/create">
-            <Button
-              className={classes.btnCreate}
-              variant="contained"
-              color="primary"
-            >
-              Create Student
-            </Button>
-          </Link>
+          <Typography
+            variant="h6"
+            style={{ padding: "30px 0", color: "#466360" }}
+          >
+            /List Students
+          </Typography>
           <Paper className={classes.root}>
             <TableContainer className={classes.container}>
               <Table stickyHeader aria-label="sticky table">
@@ -126,7 +191,6 @@ function Home(props) {
                         key={column.id}
                         align={column.align}
                         style={{
-                          minWidth: column.minWidth,
                           backgroundColor: "#5C8D89",
                           color: "white",
                         }}
@@ -136,57 +200,61 @@ function Home(props) {
                     ))}
                   </TableRow>
                 </TableHead>
-                <TableBody>
-                  {data
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((item, index) => {
-                      return (
-                        <TableRow hover key={item._id}>
-                          <TableCell
-                            component="th"
-                            style={{ width: 50 }}
-                            scope="row"
-                          >
-                            {index + 1}
-                          </TableCell>
-                          <TableCell style={{ width: 160 }} align="left">
-                            {item.fullname}
-                          </TableCell>
-                          <TableCell style={{ width: 160 }} align="left">
-                            {item.email}
-                          </TableCell>
-                          <TableCell style={{ width: 160 }} align="left">
-                            {item.mobile}
-                          </TableCell>
-                          <TableCell style={{ width: 160 }} align="left">
-                            {item.address}
-                          </TableCell>
-                          <TableCell style={{ width: 160 }} align="left">
-                            {item.hobby}
-                          </TableCell>
-                          <TableCell style={{ width: 160 }} align="left">
-                            <Link to={`edit/${item._id}`}>
-                              <Button
-                                style={{ marginRight: "10px" }}
-                                variant="outlined"
-                                color="primary"
+                {!loading ? (
+                  <TableBody>
+                    {newData
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((item, index) => {
+                        return (
+                          <TableRow hover key={item._id}>
+                            <TableCell component="th" scope="row">
+                              {index + 1}
+                            </TableCell>
+                            <TableCell align="left">{item.fullname}</TableCell>
+                            <TableCell align="left">{item.email}</TableCell>
+                            <TableCell align="left">{item.mobile}</TableCell>
+                            <TableCell align="left">{item.address}</TableCell>
+                            <TableCell align="left">{item.hobby}</TableCell>
+                            <TableCell align="left">
+                              <Link
+                                to={`edit/${item._id}`}
+                                style={{ textDecoration: "none" }}
                               >
-                                Edit
-                              </Button>
-                            </Link>
+                                <Button
+                                  style={{ marginRight: "10px" }}
+                                  variant="outlined"
+                                  color="primary"
+                                >
+                                  Edit
+                                </Button>
+                              </Link>
 
-                            <Button
-                              onClick={() => handleRemove(item._id)}
-                              variant="outlined"
-                              color="secondary"
-                            >
-                              remove
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
+                              <Button
+                                onClick={() => handleRemove(item._id)}
+                                variant="outlined"
+                                color="secondary"
+                              >
+                                remove
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                ) : (
+                  <Box
+                    style={{
+                      position: "absolute",
+                      left: "50%",
+                      transform: "translate(-50%,0)",
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                )}
               </Table>
             </TableContainer>
             <TablePagination

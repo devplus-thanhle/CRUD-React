@@ -13,6 +13,11 @@ const noteReducer = (state = initialState, action) => {
         ...state,
         students: action.payload.students,
       };
+    case STUDENTS_TYPES.GET_STUDENT:
+      return {
+        ...state,
+        student: action.payload.student,
+      };
     case STUDENTS_TYPES.CREATE_STUDENT:
       return {
         ...state,

@@ -11,7 +11,12 @@ export const STUDENTS_TYPES = {
   CREATE_STUDENT: "CREATE_STUDENT",
   UPDATE_STUDENT: "UPDATE_STUDENT",
   DELETE_STUDENT: "DELETE_STUDENT",
+  GET_STUDENT: "GET_STUDENT",
   LOADING: "LOADING",
+  // getAllStudent: (data) => ({
+  //   type: STUDENTS_TYPES.GET_STUDENTS,
+  //   payload: data,
+  // }),
 };
 
 export const getNotes = () => async (dispatch) => {
@@ -23,6 +28,22 @@ export const getNotes = () => async (dispatch) => {
       payload: { ...res.data },
     });
     dispatch({ type: STUDENTS_TYPES.LOADING, payload: false });
+  } catch (error) {
+    dispatch({
+      type: GLOBALTYPES.ALERT,
+      payload: { error: error.response.data.msg },
+    });
+  }
+};
+
+export const getStudentById = (id) => async (dispatch) => {
+  try {
+    const res = await getDataAPI(`student/${id}`);
+    console.log(res);
+    dispatch({
+      type: STUDENTS_TYPES.GET_STUDENT,
+      payload: { ...res.data },
+    });
   } catch (error) {
     dispatch({
       type: GLOBALTYPES.ALERT,
@@ -85,6 +106,10 @@ export const deleteStudent = (id) => async (dispatch) => {
     dispatch({
       type: STUDENTS_TYPES.DELETE_STUDENT,
       payload: res.data.newStudent._doc,
+    });
+    dispatch({
+      type: GLOBALTYPES.ALERT,
+      payload: { success: res.data.msg },
     });
   } catch (error) {
     dispatch({

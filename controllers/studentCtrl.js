@@ -1,19 +1,15 @@
 const Students = require("../models/studentModel");
 
-function isValidEmail(str) {
-  if (str === "" || !str.includes("@")) return false;
-  const firstAs = str.indexOf("@");
-  const firstDot = str.indexOf(".");
+function validPhone(phone) {
+  const phoneRegExp =
+    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+  return phoneRegExp.test(phone);
+}
 
-  const firstWord = str.slice(0, firstAs);
-  const secondWord = str.slice(firstAs + 1, firstDot);
-
-  const domain = str.slice(firstDot);
-  const isDomain = [".com.vn", ".com", ".vn"].some((x) => x === domain);
-
-  if (firstWord.length < 3 || secondWord.length < 3 || !isDomain) return false;
-
-  return true;
+function validateEmail(email) {
+  const re =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
 }
 
 const studentCtrl = {
@@ -24,8 +20,12 @@ const studentCtrl = {
       if (!fullname || !email || !mobile || !address || !hobby) {
         return res.status(400).json({ msg: "Please enter all fields" });
       }
-      if (!isValidEmail(email)) {
+      if (!validateEmail(email)) {
         return res.status(400).json({ msg: "Email is not valid" });
+      }
+
+      if (!validPhone(mobile)) {
+        return res.status(400).json({ msg: "Mobile is not valid" });
       }
 
       const student_email = await Students.findOne({ email });
@@ -60,9 +60,31 @@ const studentCtrl = {
       return res.status(500).json({ msg: error.message });
     }
   },
+  getStudentById: async (req, res) => {
+    try {
+      const student = await Students.findById(req.params.id);
+      res.json({
+        msg: "Successfully",
+        student,
+      });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  },
   updateStudent: async (req, res) => {
     try {
       const { fullname, email, mobile, address, hobby } = req.body;
+
+      if (!fullname || !email || !mobile || !address || !hobby) {
+        return res.status(400).json({ msg: "Please enter all fields" });
+      }
+      if (!validateEmail(email)) {
+        return res.status(400).json({ msg: "Email is not valid" });
+      }
+
+      if (!validPhone(mobile)) {
+        return res.status(400).json({ msg: "Mobile is not valid" });
+      }
       const student = await Students.findOneAndUpdate(
         { _id: req.params.id },
         {
@@ -84,6 +106,19 @@ const studentCtrl = {
           hobby,
         },
       });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  },
+  searchStudent: async (req, res) => {
+    try {
+      const students = await Students.find({
+        fullname: { $regex: new RegExp(req.query.fullname.toLowerCase(), "i") },
+      })
+        .limit(10)
+        .select("fullname email mobile address hobby");
+
+      res.json({ students });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
