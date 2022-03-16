@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteStudent, getNotes } from "../redux/Action/studentAction";
 import { makeStyles } from "@material-ui/core/styles";
@@ -13,10 +13,9 @@ import TableRow from "@material-ui/core/TableRow";
 import { Box, Button, Typography } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 import { getDataAPI } from "../api/fetchData";
 import { GLOBALTYPES } from "../redux/Action/globalTypes";
-import HighlightOffOutlinedIcon from "@material-ui/icons/HighlightOffOutlined";
+import SearchForm from "../components/SearchForm";
 
 const columns = [
   { id: "stt", label: "STT", minWidth: 100 },
@@ -77,11 +76,7 @@ function Home(props) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [data, setData] = useState([]);
-  const [value, setValue] = useState(null);
-  // const [newValue, setNewValue] = useState(null);
-  const [newData, setNewData] = useState([]);
   const [loading, setLoading] = useState(false);
-  // const typingTimeoutRef = useRef(null);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getNotes());
@@ -96,33 +91,20 @@ function Home(props) {
     setPage(0);
   };
 
-  // const handleSearchTermChange = (e) => {
-  //   const value = e.target.value;
-  //   setValue(value);
-  //   if (typingTimeoutRef.current) {
-  //     clearTimeout(typingTimeoutRef.current);
-  //   }
-
-  //   typingTimeoutRef.current = setTimeout(() => {
-  //     const formValues = {
-  //       value: value,
-  //     };
-  //     setNewValue(formValues);
-  //   }, 400);
-  // };
-
   useEffect(() => {
     if (student.students) {
       setData(student.students);
     }
   }, [student]);
+  const [filter, setFilter] = useState();
 
   useEffect(() => {
     async function Search() {
-      if (value) {
+      if (filter) {
+        console.log(filter.value);
         setLoading(true);
-        await getDataAPI(`search?fullname=${value}`)
-          .then((res) => setNewData(res.data.students))
+        await getDataAPI(`search?fullname=${filter.value}`)
+          .then((res) => setData(res.data.students))
           .catch((err) => {
             dispatch({
               type: GLOBALTYPES.ALERT,
@@ -132,43 +114,27 @@ function Home(props) {
             });
           });
         setLoading(false);
-      } else {
-        setNewData(data);
       }
-      // if (!value) {
-      //   setNewData(data);
-      // }
     }
     Search();
-  }, [value, dispatch, data]);
+  }, [filter, dispatch]);
 
   const handleRemove = (id) => {
     if (window.confirm("Are you sure to delete this student?")) {
       dispatch(deleteStudent(id));
     }
   };
-  const handleClose = () => {
-    setValue("");
+
+  const handleFiterChange = (newFilter) => {
+    setFilter(newFilter);
+  };
+  const handleClose = (data) => {
+    setFilter(data);
   };
 
   return (
     <>
-      <div className="topnav__search">
-        <input
-          onChange={(e) => setValue(e.target.value)}
-          value={value}
-          type="text"
-          placeholder="Search here..."
-        />
-        {value ? (
-          <HighlightOffOutlinedIcon
-            onClick={handleClose}
-            className="topnav__search-icon close"
-          />
-        ) : (
-          <SearchOutlinedIcon className="topnav__search-icon" />
-        )}
-      </div>
+      <SearchForm onSubmit={handleFiterChange} handleClose={handleClose} />
       {student.loading ? (
         <div className={classes.loading}>
           <CircularProgress size={70} />
@@ -202,7 +168,7 @@ function Home(props) {
                 </TableHead>
                 {!loading ? (
                   <TableBody>
-                    {newData
+                    {data
                       .slice(
                         page * rowsPerPage,
                         page * rowsPerPage + rowsPerPage

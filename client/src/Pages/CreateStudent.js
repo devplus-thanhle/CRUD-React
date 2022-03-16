@@ -5,6 +5,7 @@ import { createStudent } from "../redux/Action/studentAction";
 
 const CreateStudent = () => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
   const [formValues, setFormValues] = useState({
     fullname: "",
     email: "",
@@ -12,8 +13,10 @@ const CreateStudent = () => {
     address: "",
     hobby: "",
   });
-  const onSubmit = (studentObject) => {
-    dispatch(createStudent(studentObject));
+  const onSubmit = async (studentObject) => {
+    setLoading(true);
+    await dispatch(createStudent(studentObject));
+    setLoading(false);
   };
 
   return (
@@ -21,6 +24,7 @@ const CreateStudent = () => {
       <StudentForm
         initialValues={formValues}
         onSubmit={onSubmit}
+        loading={loading}
         enableReinitialize
       >
         Create Student

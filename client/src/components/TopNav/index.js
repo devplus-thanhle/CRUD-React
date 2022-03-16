@@ -1,6 +1,5 @@
 import React from "react";
 import "./topnav.css";
-import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 
 const Topnav = () => {
   return (
@@ -18,7 +17,7 @@ const Topnav = () => {
                 alt=""
               />
             </div>
-            <div className="topnav__right-user__name">Thành Lê</div>
+            <div className="topnav__right-user__name">HeHeHe</div>
           </div>
         </div>
       </div>

@@ -8,9 +8,12 @@ import { useParams } from "react-router-dom";
 const EditStudent = () => {
   const dispatch = useDispatch();
   const [formValues, setFormValues] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
-  const onSubmit = (studentObject) => {
-    dispatch(updateStudent(studentObject, id));
+  const onSubmit = async (studentObject) => {
+    setLoading(true);
+    await dispatch(updateStudent(studentObject, id));
+    setLoading(false);
   };
   useEffect(() => {
     axios
@@ -27,6 +30,7 @@ const EditStudent = () => {
         <StudentForm
           initialValues={formValues}
           onSubmit={onSubmit}
+          loading={loading}
           enableReinitialize
         >
           Edit Student

@@ -9,6 +9,7 @@ import { useFormik } from "formik";
 import React from "react";
 import * as yup from "yup";
 import IconForm from "../../assets/img/iconform.png";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const useStyles = makeStyles((theme) => ({
   textfield: {
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StudentForm = (props) => {
-  const { onSubmit, initialValues } = props;
+  const { onSubmit, initialValues, loading } = props;
   const classes = useStyles();
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -143,14 +144,14 @@ const StudentForm = (props) => {
           />
           <Button
             // disabled={!formik.isSubmitting}
-            // style={{ backgroundColor: "#5C8D89", color: "white" }}
+            disabled={loading}
             color="primary"
             type="submit"
             fullWidth
             variant="contained"
             className={classes.btnSubmit}
           >
-            Submit
+            {loading ? <CircularProgress size={24} /> : "Submit"}
           </Button>
         </form>
       </Container>
